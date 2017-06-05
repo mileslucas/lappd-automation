@@ -26,17 +26,18 @@ if(args.init):
 ser.write(b'mc 0 0\n')
 ser.write(b'mc 1 0\n')
 
-plate_width = 544990 # Motor encoder ticks #TODO
+plate_width = 545000 # Motor encoder ticks #TODO
 step = int(plate_width / args.n)
+TekFFM.take_data('Delete_this', '1_2_3___0', 1)
 for i in range(args.n):
     print('Stop: {}'.format(i))
     ser.write('mr 0 {}\n'.format(step).encode())
 
     #Take Data #TODO
-    TekFFM.take_data()
+    TekFFM.take_data('C:/Delete_this', '1_2_3__'+str(i+1), 1)
 
 print('Finished')
-ser.write(b'ma 0 0\n')
+ser.write('mr 0 -{}\n'.format(plate_width).encode())
 ser.write(b'ma 1 0\n')
 
 ser.close()
