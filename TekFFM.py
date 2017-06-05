@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import vxi11
 import argparse
 import datetime
@@ -20,29 +21,23 @@ if(args.filter): filename += '_ND{}'.format(args.filter)
 
 # Set up instrument
 scope = vxi11.Instrument(inst_ip);
-print(instr.ask('*IDN?'))
-
-state = scope.ask('ACQ:STATE?')
-if (!state): sys.exit(-1)
+print(scope.ask('*IDN?'))
 
 # Create Folder for data
 fold = 'C:/' + args.fold
-scope.ask('FILES:MKD \'{}\''.format(fold))
+scope.write('FILES:MKD \'{}\''.format(fold))
 
 # Set up fastframe and scope settings
-scope.ask('HOR:MAIN:SCA 10e-9') # 10 ns
-scope.ask('HOR:FAST:STATE 1')
-scope.ask('HOR:FAST:COUN 1000')
-
-state = scope.ask('ACQ:STATE?')
-if (!state): sys.exit(-1)
+scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
+scope.write('HOR:FAST:STATE 1')
+scope.write('HOR:FAST:COUN 1000')
 
 # Get acquisitions
 for i in range(args.nacq):
-    scope.ask('SAVE:WAVE All \'{1}/{2}_{3}.wfm\''.format(fold, filename, i))
+    print('\nStarting acquisition {}/{} ...'.format(i + 1, args.nacq))
+    scope.write('SAVE:WAVE ALL, \'{}/{}_{}.wfm\''.format(fold, filename, i))
+    print('Data acquired, now writing...')
     time.sleep(20)
-    print('Finished acquisition {}/{}'.format(i, args.nacq))
-    state = scope.ask('ACQ:STATE?')
-    if (!state): sys.exit(-1)
+    print('Finished')
 
-print('Finished\nFiles stored in \'{}\' on scope'.format(fold))
+print('\nFinished\nFiles stored in \'{}/\' on scope'.format(fold))
