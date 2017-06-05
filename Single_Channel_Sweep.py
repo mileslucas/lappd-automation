@@ -3,6 +3,7 @@
 import argparse
 import serial
 import time
+import TekFFM
 
 # Argument Parsing
 # Argument Parsing
@@ -32,7 +33,7 @@ for i in range(args.n):
     ser.write('mr 0 {}\n'.format(step).encode())
 
     #Take Data #TODO
-    time.sleep(5)
+    TekFFM.take_data()
 
 print('Finished')
 ser.write(b'ma 0 0\n')
