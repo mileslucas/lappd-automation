@@ -18,7 +18,7 @@ time.sleep(15)
 # Move the motors
 
 plate_width = 500000 # Motor encoder ticks #TODO
-step = plate_width / args.n
+step = int(plate_width / args.n)
 
 for i in range(args.n + 1):
     ser.write('mr 0 {}'.format(step).encode())
@@ -27,4 +27,4 @@ for i in range(args.n + 1):
     time.sleep(5)
 
 print('Finished')
-ser.close()    
+ser.close()
