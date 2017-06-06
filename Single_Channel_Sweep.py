@@ -4,20 +4,20 @@ import argparse
 import serial
 import time
 import TekFFM
+import motor_functions as mf
 
 # Argument Parsing
 # Argument Parsing
 parser = argparse.ArgumentParser(description='Move motors to n discrete points on an LAPPD channel to take data')
 parser.add_argument('n', type=int, help='The number of samples to be taken on this channel')
+parser.add_argument('-d', '--data', action='store_true', help='Take data using the Tek oscilliscope')
 parser.add_argument('-i', '--init', action='store_true', help='Initialize the IPC controller')
 args = parser.parse_args()
 
 # Initialize the motors
 ser = serial.Serial('/dev/ttyUSB0', baudrate=19200, xonxoff=True)
 if(args.init):
-    print('Initializing')
-    ser.write(b'jmp \n')
-    time.sleep(15)
+    mf.init(ser)
 
 # Zero the motors
 # TODO
@@ -37,7 +37,6 @@ for i in range(args.n):
     TekFFM.take_data('C:/Delete_this', '1_2_3__'+str(i+1), 1)
 
 print('Finished')
-ser.write('mr 0 -{}\n'.format(plate_width).encode())
-ser.write(b'ma 1 0\n')
+mf.reset(ser)
 
 ser.close()
