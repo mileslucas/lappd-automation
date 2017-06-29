@@ -24,8 +24,12 @@ def take_data(folder, filename, nacq):
     # Get acquisitions
     for i in range(nacq):
         print('\nStarting acquisition {}/{} ...'.format(i + 1, nacq))
-        scope.write('SAVE:WAVE ALL, \'{}/{}_{}.wfm\''.format(folder, filename, i))
+        scope.write('ACQ:STATE RUN')
+        while(int(scope.ask('ACQ:STATE?'))):
+            time.sleep(1)
         print('Data acquired, now writing...')
+        scope.write('SAVE:WAVE ALL, \'{}/{}_{}.wfm\''.format(folder, filename, i))
+
         time.sleep(20)
         print('Finished')
 

@@ -5,10 +5,9 @@ def init(ser):
     ser.write(b'jmp 16\n')
     time.sleep(15)
 
-def reset(ser):
-    ser.write(b'ma 0 0\n')
-    ser.write(b'ma 1 0\n')
+def reset(ser, motor):
+    ser.write('ma {} 0\n'.format(motor).encode())
 
 def stop(ser):
     ser.write(b'mr 0 0\n')
-    ser.write(b'mr 0 0\n')
+    ser.write(b'mr 1 0\n')
