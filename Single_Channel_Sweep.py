@@ -44,8 +44,8 @@ for i in range(args.n):
     time.sleep(10)
     mf.stop(ser)
     # Take Data #TODO
-    if args.data and not(i == 8 or i == 9 or i == 11 or i == 12):
-        TekFFM.take_data('C:/6.23.17_testdata_ND1.3', '2700_2600_1600_stop'+str(i), 10)
+    if args.data and not(i == 6 or i == 8):
+        TekFFM.take_data('C:/6.30.17_testdata/No Filter', '2700_2600_1600_stop'+str(i), 10)
 
 print('Finished')
 ser.write('ma 0 {}\n'.format(start_tick).encode())

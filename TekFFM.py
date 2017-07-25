@@ -6,6 +6,9 @@ import sys
 import time
 
 def take_data(folder, filename, nacq):
+    # if '/' in folder or filename:
+    #     print('Data will not be saved if parent directories do not exist')
+
     inst_ip = '192.168.2.152'
 
 
