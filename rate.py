@@ -48,8 +48,8 @@ def get_rate(scope, ch, nacq):
 if __name__=='__main__':
     # Argument Parsing
     parser = argparse.ArgumentParser(description='Take Tek Oscilliscope data remotely')
-    parser.add_argument('-ch --channel', default=1, help='Channel to monitor')
+    parser.add_argument('-ch --chan', default=1, help='Channel to monitor')
     parser.add_argument('-n --nacq', type=float, default=100, help='Number of events to use in fast frame')
     parser.add_argument('-s --sma', type=int, default=10, help='The number of waveforms to average in simple moving average')
     args = parser.parse_args()
-    main(args.channel, args.nacq, args.sma)
+    main(args.chan, args.nacq, args.sma)
