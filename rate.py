@@ -6,11 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-def main(nacq):
-    plt.style.use('seaborn')
-    plt.figure()
-    plt.ylabel('Frequency (Hz)')
-    hl = plt.plot([], [])
+def main(ch, nacq, sma):
     inst_ip = '192.168.2.152'
 
     # Set up instrument
@@ -23,12 +19,15 @@ def main(nacq):
     ma = []
     try:
         while True:
-            inst_rate = get_rate(scope, nacq)
+            inst_rate = get_rate(scope, ch, nacq)
             rate.append(inst_rate)
-            avg_rate = np.asarray(rate)[-10:].mean()
+            avg_rate = np.asarray(rate)[-sma:].mean()
             ma.append(avg_rate)
             print('Rate: {:.2f} Hz  Avg Rate: {:.2f} Hz'.format(inst_rate, avg_rate), end='\r')
     except KeyboardInterrupt:
+        plt.style.use('seaborn')
+        plt.figure()
+        plt.ylabel('Frequency (Hz)')
         plt.plot(rate, c='C0', label='FFA')
         plt.plot(ma, '--', c='C0', label='10 MA')
         plt.legend(loc='best')
@@ -36,12 +35,12 @@ def main(nacq):
         sys.exit()
 
 
-def get_rate(scope, nacq):
+def get_rate(scope, ch, nacq):
     # Get acquisitions
     scope.write('ACQ:STATE RUN')
     while(int(scope.ask('ACQ:STATE?'))):
         time.sleep(1)
-    total = float(scope.ask('HOR:FAST:TIMES:BETW:CH3? {},1'.format(nacq))[7:-1].replace(' ', ''))
+    total = float(scope.ask('HOR:FAST:TIMES:BETW:CH{}? {},1'.format(ch, nacq))[7:-1].replace(' ', ''))
     avg = total / nacq
     # Return the frequency (1 / Period)
     return 1 / avg
@@ -49,6 +48,8 @@ def get_rate(scope, nacq):
 if __name__=='__main__':
     # Argument Parsing
     parser = argparse.ArgumentParser(description='Take Tek Oscilliscope data remotely')
-    parser.add_argument('nacq', type=float, default=100, help='Number of events to use for average')
+    parser.add_argument('-ch --channel', default=1, help='Channel to monitor')
+    parser.add_argument('-n --nacq', type=float, default=100, help='Number of events to use in fast frame')
+    parser.add_argument('-s --sma', type=int, default=10, help='The number of waveforms to average in simple moving average')
     args = parser.parse_args()
-    main(args.nacq)
+    main(args.channel, args.nacq, args.sma)
