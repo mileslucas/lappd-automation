@@ -15,14 +15,14 @@ def stop():
     ser.write('mr 0 0\n'.encode())
 try:
     while True:
-        cmd = raw_input('@ ')
+        cmd = input('@ ')
         if cmd=='left':
             left()
         elif cmd=='right':
             right()
         elif cmd=='stop':
             stop()
-        else
+        else:
             print('Invalid input')
 except KeyboardInterrupt:
     stop()
