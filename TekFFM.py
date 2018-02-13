@@ -42,10 +42,10 @@ if __name__=='__main__':
     # Argument Parsing
     parser = argparse.ArgumentParser(description='Take Tek Oscilliscope data remotely')
     parser.add_argument('folder', default=datetime.date, help='The folder name below "C:/" for the saved oscilliscope data')
-    parser.add_argument('filename', nargs=3, type=int, help='The filename base for the saved files')
+    parser.add_argument('filename', help='The filename base for the saved files')
     parser.add_argument('nacq', type=int, help='The number of fastframe acquisitions to take')
     args = parser.parse_args()
 
-    fold = 'C:/' + args.fold
+    fold = 'C:/' + args.folder
 
     take_data(fold, args.filename, args.nacq)
