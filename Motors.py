@@ -10,7 +10,7 @@ class MotorConnection():
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.motor.allstop()
-        self.motor.ser.close()
+        self.motor.disconnect()
 
 
 class Motors():
@@ -22,7 +22,10 @@ class Motors():
         self.ser.write(b'jmp 16\n')
         time.sleep(15)
         print('connected')
-    
+
+    def disconnect(self):
+        self.ser.close()    
+
     def allstop(self):
         self.stop(0)
         self.stop(1)
