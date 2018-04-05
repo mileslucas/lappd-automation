@@ -1,4 +1,6 @@
 from Motors import MotorConnection
+from numpy import linspace
+import time
 import argparse
 
 def MultiChannelSweep(stops, channels, x0, y0, x1, y1):
@@ -7,8 +9,16 @@ def MultiChannelSweep(stops, channels, x0, y0, x1, y1):
     ------------------
 
     '''
-
-    pass
+    xstops = linspace(x0, x1, stops)
+    ystops = linspace(y0, y1, channels)
+    with MotorConnection() as m:
+        for x in xstops:
+            m.moveto(0, x)
+            time.sleep(1)
+            for y in ystops:
+                m.moveto(1, y)
+                time.sleep(1)
+    
 
 if __name__=='__main__':
     # Argument Parsing
@@ -20,5 +30,5 @@ if __name__=='__main__':
     parser.add_argument('-d', '--data', default=False, action='store_true',
                         help='Take data using the Tek oscilliscope')
     args = parser.parse_args()
-    MultiChannelSweep(args.n, args.c, 0, 0, 0, 0)
+    MultiChannelSweep(args.n, args.c, -100000, -100000, 10000, 10000)
 
