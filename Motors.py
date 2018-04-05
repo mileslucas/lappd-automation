@@ -5,13 +5,22 @@ import time
 class Motors():
     def __init__(self, dev='/dev/ttyUSB0', baudrate=19200, xonxoff=True):
         self.ser = serial.Serial(dev, baudrate=baudrate, xonxoff=xonxoff)
-    
-    def __enter__(self):
+        print('Connecting...', end=' ')
         self.ser.write(b'jmp 16\n')
         time.sleep(15)
-
-    def __exit__(self):
+        print('connected')
+    
+    def __del__(self):
+        self.allstop()
         self.ser.close()
+
+    @classmethod
+    def __enter__(cls):
+        return cls()
+
+    @classmethod
+    def __exit__(cls)
+        del cls
 
     def allstop(self):
         self.stop(0)
