@@ -31,4 +31,18 @@ class Motors():
     def move(self, motor, distance):
         self.ser.write('mr {} {}\n'.format(motor, distance).encode())
 
-    
+if __name__=='__main__':
+    with Motors() as m:
+        try:
+            while True:
+                cmd = input('@ ')
+                if cmd=='left':
+                    m.move(0, -10000)
+                elif cmd=='right':
+                    m.move(0, 10000)
+                elif cmd=='stop':
+                    m.stop(0)
+                else:
+                    print('Invalid input')
+        except KeyboardInterrupt:
+            m.allstop()
