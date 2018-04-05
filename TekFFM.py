@@ -20,7 +20,7 @@ def take_data(folder, filename, nacq):
     scope.write('FILES:MKD \'{}\''.format(folder))
 
     # Set up fastframe and scope settings
-    scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
+    # scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
     scope.write('HOR:FAST:STATE 1')
     scope.write('HOR:FAST:COUN 1000')
 
