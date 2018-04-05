@@ -1,0 +1,34 @@
+import serial
+import time
+
+
+class Motors():
+    def __init__(self, dev='/dev/ttyUSB0', baudrate=19200, xonxoff=True):
+        self.ser = serial.Serial(dev, baudrate=baudrate, xonxoff=xonxoff)
+        ser.write(b'jmp 16\n')
+        time.sleep(15)
+
+    def __del__(self)
+        self.ser.close()
+
+    def allstop(self):
+        self.stop(0)
+        self.stop(1)
+
+    def park(self):
+        self.reset(0)
+        self.reset(1)
+        
+    def reset(self, motor):
+        self.move(motor, 0)
+
+    def moveto(self, motor, position):
+        self.ser.write('ma {} {}\n'.format(motor, position).encode())
+    
+    def stop(self, motor):
+        self.move(motor, 0)
+
+    def move(self, motor, distance):
+        self.ser.write('mr {} {}\n'.format(motor, distance).encode())
+
+    
