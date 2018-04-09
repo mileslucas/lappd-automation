@@ -5,6 +5,7 @@ import argparse
 import logging
 logging.basicConfig(level=logging.INFO)
 
+VEL = 13000 # encoder ticks per second, approx (rounded down)
 def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False):
     '''
     MultiChannelSweep
@@ -12,7 +13,9 @@ def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False):
 
     '''
     xstops = linspace(*xlims, stops, dtype=int32)
+    xtime = (xstops[1] - xstops[0]) / VEL
     ystops = linspace(*ylims, channels, dtype=int32)
+    ytime = (ystops[1] - ystops[0]) / VEL
     with MotorConnection() as m:
         logging.info('Moving to start position')
         m.moveto(0, xstops[0])
@@ -24,10 +27,11 @@ def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False):
                 if j == 0:
                     logging.info('Moving x stage to {}'.format(x))
                     m.moveto(0, x)
+                    time.sleep(xtime)
                 else:
                     logging.info('Moving y stage to {}'.format(y))
                     m.moveto(1, y)
-                time.sleep(3)
+                    time.sleep(ytime)
                 m.allstop()
                 if takeData:
                     pass
