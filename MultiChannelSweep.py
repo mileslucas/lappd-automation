@@ -1,17 +1,28 @@
 from Motors import MotorConnection
+from TekFFM import take_data
 from numpy import linspace, int32
 import time
 import argparse
 import logging
 logging.basicConfig(level=logging.INFO)
 
+REACH = 2810 # ticks per mm
+
 VEL = 13000 # encoder ticks per second, approx (rounded down)
-def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False):
+XLIM = (0, 495000)
+YLIM = (-20000, 20000)
+
+def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False, **kwargs):
     '''
     MultiChannelSweep
     ------------------
 
     '''
+
+    if takeData:
+        if not ('folder' in kwargs and 'filename' in kwargs and 'nacq' in kwargs):
+            return ValueError('Must specify save parameters for TekFFM to take data')
+
     xstops = linspace(*xlims, stops, dtype=int32)
     xtime = (xstops[1] - xstops[0]) / VEL
     ystops = linspace(*ylims, channels, dtype=int32)
@@ -34,7 +45,7 @@ def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False):
                     time.sleep(ytime)
                 m.allstop()
                 if takeData:
-                    pass
+                    take_data('C:/' + kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'])
 
 
 if __name__=='__main__':
@@ -46,5 +57,11 @@ if __name__=='__main__':
     parser.add_argument('-d', '--data', default=False, action='store_true',
                         help='Take data using the Tek oscilliscope')
     args = parser.parse_args()
-    logging.info('Parsed arguments: {}'.format(args))
-    MultiChannelSweep(args.n, args.c, (-100000, 10000), (-10000, 10000), args.data)
+    logging.debug('Parsed arguments: {}'.format(args))
+    if args.data:
+        print('Taking data: Please enter TekFFM params (folder filename nacq)')
+        params = input().split()
+        logging.debug('Take data params: {}'.format(params))
+        MultiChannelSweep(args.n, args.c, XLIM, YLIM, args.data, folder=params[0], filename=params[1], nacq=int(params[2]))
+    else:
+        MultiChannelSweep(args.n, args.c, XLIM, YLIM)
