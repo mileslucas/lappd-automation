@@ -4,7 +4,7 @@ from numpy import linspace, int32
 import time
 import argparse
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 REACH = 2810 # ticks per mm
 
@@ -12,16 +12,15 @@ VEL = 13000 # encoder ticks per second, approx (rounded down)
 XLIM = (0, 495000)
 YLIM = (-20000, 20000)
 
-def MultiChannelSweep(stops, channels, xlims, ylims, takeData=False, **kwargs):
+def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
     '''
     MultiChannelSweep
     ------------------
 
     '''
 
-    if takeData:
-        if not ('folder' in kwargs and 'filename' in kwargs and 'nacq' in kwargs):
-            return ValueError('Must specify save parameters for TekFFM to take data')
+    if 'folder' in kwargs and 'filename' in kwargs and 'nacq' in kwargs:
+        takeData = True
 
     xstops = linspace(*xlims, stops, dtype=int32)
     xtime = (xstops[1] - xstops[0]) / VEL
@@ -54,14 +53,11 @@ if __name__=='__main__':
     parser.add_argument(
         'n', type=int, help='The number of samples to be taken on a channel')
     parser.add_argument('c', type=int, help='The number of channels to sample from' )
-    parser.add_argument('-d', '--data', default=False, action='store_true',
-                        help='Take data using the Tek oscilliscope')
+    parser.add_argument('-d', '--data', nargs=3, 
+                        help='Take data using the Tek oscilliscope with three params: folder filename nacqs')
     args = parser.parse_args()
     logging.debug('Parsed arguments: {}'.format(args))
-    if args.data:
-        print('Taking data: Please enter TekFFM params (folder filename nacq)')
-        params = input().split()
-        logging.debug('Take data params: {}'.format(params))
-        MultiChannelSweep(args.n, args.c, XLIM, YLIM, args.data, folder=params[0], filename=params[1], nacq=int(params[2]))
+    if args.data is not None:
+        MultiChannelSweep(args.n, args.c, XLIM, YLIM, folder=args.data[0], filename=args.data[1], nacq=int(args.data[2]))
     else:
         MultiChannelSweep(args.n, args.c, XLIM, YLIM)
