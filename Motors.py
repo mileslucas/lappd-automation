@@ -18,6 +18,10 @@ class Motors():
         self.ser = ser
     
     def connect(self):
+        try:
+            self.ser.open()
+        except serial.SerialException:
+            print('Port Already Opened')
         print('Connecting...', end=' ')
         self.ser.write(b'jmp 16\n')
         time.sleep(15)
