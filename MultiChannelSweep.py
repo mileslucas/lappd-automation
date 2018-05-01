@@ -14,8 +14,22 @@ YLIM = (-20000, 20000)
 
 def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
     '''
-    MultiChannelSweep
-    ------------------
+    This will do a multi channel motor sweep
+
+    params
+    ------
+    stops (int):
+        The number of stops to make in the x direction
+    channels (int):
+        The number of stops to make across the channel limits
+    xlims (2-tuple of int):
+        The limits of the x stage, inclusive
+    ylims (2-tuple of int):
+        The limits of the y stage, inclusive
+    
+    [**kwargs]
+    folder, filename, nacg:
+        The parameters for TekFFM if provided will save data at each stop
 
     '''
 
@@ -27,7 +41,7 @@ def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
     ystops = linspace(*ylims, channels, dtype=int32)
     ytime = (ystops[1] - ystops[0]) / VEL
     with MotorConnection() as m:
-        logging.info('Moving to start position')
+        logging.info('Moving to initial position')
         m.moveto(0, xstops[0])
         m.moveto(1, ystops[0])
         time.sleep(15)
@@ -36,17 +50,19 @@ def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
             yseq = ystops if not i % 2 else reversed(ystops)
             idx = idx if not i % 2 else reversed(idx)
             for j, y in zip(idx, yseq):
+                logging.info('Stop {}/{}'.format((i * channels + j), stops * channels))
                 if j == 0:
-                    logging.info('Moving x stage to {}'.format(x))
+                    logging.debug('Moving x stage to {}'.format(x))
                     m.moveto(0, x)
                     time.sleep(xtime)
                 else:
-                    logging.info('Moving y stage to {}'.format(y))
+                    logging.debug('Moving y stage to {}'.format(y))
                     m.moveto(1, y)
                     time.sleep(ytime)
                 m.allstop()
                 if takeData:
-                    take_data(kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'])
+                    logging.info('Taking data...')
+                    take_data(kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'], verbose=False)
         logging.info('Moving home')
         m.park()
 

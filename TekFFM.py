@@ -5,7 +5,7 @@ import datetime
 import sys
 import time
 
-def take_data(fold, filename, nacq):
+def take_data(fold, filename, nacq, verbose=True):
     '''
     This function takes data using the tektronix oscilloscope set up in Matt's workspace
 
@@ -18,14 +18,17 @@ def take_data(fold, filename, nacq):
         This will be the filename to prepend each sample with.
     nacg (int):
         This is the number of fast frame acquisitions to make
+    verbose (bool):
+        Show outputs from acquisition
     '''
+    
 
     inst_ip = '192.168.2.152'
 
     folder = 'C:/' + fold
 
     # Set up instrument
-    scope = vxi11.Instrument(inst_ip);
+    scope = vxi11.Instrument(inst_ip)
     print(scope.ask('*IDN?'))
 
     # Create Folder for data
