@@ -54,7 +54,7 @@ if __name__=='__main__':
         'n', type=int, help='The number of samples to be taken on a channel')
     parser.add_argument('c', type=int, help='The number of channels to sample from' )
     parser.add_argument('-d', '--data', nargs=3, 
-                        help='Take data using the Tek oscilliscope with three params: folder filename nacqs')
+                        help='Take data using the Tek oscilliscope', metavar=('FOLDER', 'FILENAME', 'NACQS'))
     args = parser.parse_args()
     logging.debug('Parsed arguments: {}'.format(args))
     if args.data is not None:
