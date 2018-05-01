@@ -46,7 +46,9 @@ def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
                     time.sleep(ytime)
                 m.allstop()
                 if takeData:
-                    take_data('C:/' + kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'])
+                    take_data(kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'])
+        logging.info('Moving home')
+        m.park()
 
 
 if __name__=='__main__':

@@ -5,16 +5,15 @@ import datetime
 import sys
 import time
 
-def take_data(folder, filename, nacq):
+def take_data(fold, filename, nacq):
     '''
     This function takes data using the tektronix oscilloscope set up in Matt's workspace
 
     params
     ------
-    folder (string):
-        This is the folder on the oscope to store the data in. The full folder path should
-        be provided, e.g. 'C:/data'. Note that folders cannot be created recursively, so 
-        every folder except the last one listed must already exist on the machine
+    fold (string):
+        This is the folder on the oscope below 'C:/' to store the data in. Note that folders cannot be 
+        created recursively, so every folder except the last one listed must already exist on the machine
     filename (string):
         This will be the filename to prepend each sample with.
     nacg (int):
@@ -23,6 +22,7 @@ def take_data(folder, filename, nacq):
 
     inst_ip = '192.168.2.152'
 
+    folder = 'C:/' + fold
 
     # Set up instrument
     scope = vxi11.Instrument(inst_ip);
@@ -58,6 +58,4 @@ if __name__=='__main__':
     parser.add_argument('nacq', type=int, help='The number of fastframe acquisitions to take')
     args = parser.parse_args()
 
-    fold = 'C:/' + args.folder
-
-    take_data(fold, args.filename, args.nacq)
+    take_data(args.folder, args.filename, args.nacq)
