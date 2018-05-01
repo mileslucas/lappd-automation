@@ -6,8 +6,20 @@ import sys
 import time
 
 def take_data(folder, filename, nacq):
-    # if '/' in folder or filename:
-    #     print('Data will not be saved if parent directories do not exist')
+    '''
+    This function takes data using the tektronix oscilloscope set up in Matt's workspace
+
+    params
+    ------
+    folder (string):
+        This is the folder on the oscope to store the data in. The full folder path should
+        be provided, e.g. 'C:/data'. Note that folders cannot be created recursively, so 
+        every folder except the last one listed must already exist on the machine
+    filename (string):
+        This will be the filename to prepend each sample with.
+    nacg (int):
+        This is the number of fast frame acquisitions to make
+    '''
 
     inst_ip = '192.168.2.152'
 
