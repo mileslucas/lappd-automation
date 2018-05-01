@@ -6,7 +6,7 @@ class MotorConnection():
     This class provides a connection wrapper to enable safe use of the Motors class
 
     To use this class, use
-    >>> with MotorConnection as m:
+    >>> with MotorConnection() as m:
     >>>     # Whatever motor instructions
     '''
     def __enter__(self):
@@ -23,7 +23,7 @@ class MotorConnection():
 class Motors():
     '''
     This class wraps all the serial commands for the LAPPD motors. It should not be directly instantiated.
-    Instead a MotorConnection should be established using the with clause
+    Instead a MotorConnection should be established using the with directive
     '''
     def __init__(self, ser):
         self.ser = ser
