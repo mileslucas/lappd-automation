@@ -32,8 +32,10 @@ def MultiChannelSweep(stops, channels, xlims, ylims, **kwargs):
         m.moveto(1, ystops[0])
         time.sleep(15)
         for i, x in enumerate(xstops):
+            idx, _ = enumerate(ystops)
             yseq = ystops if not i % 2 else reversed(ystops)
-            for j, y in enumerate(yseq):
+            idx = idx if not i % 2 else reversed(idx)
+            for j, y in zip(idx, yseq):
                 if j == 0:
                     logging.info('Moving x stage to {}'.format(x))
                     m.moveto(0, x)
