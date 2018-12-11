@@ -1,9 +1,14 @@
-#!/usr/bin/env python
-import vxi11
+#!python
 import argparse
 import datetime
 import sys
 import time
+
+import vxi11
+import tqdm
+
+
+inst_ip = '10.11.151.97'
 
 def take_data(fold, filename, nacq, verbose=True):
     '''
@@ -23,7 +28,6 @@ def take_data(fold, filename, nacq, verbose=True):
     '''
     
 
-    inst_ip = '192.168.2.152'
 
     folder = 'C:/' + fold
 
@@ -40,16 +44,15 @@ def take_data(fold, filename, nacq, verbose=True):
     scope.write('HOR:FAST:COUN 1000')
 
     # Get acquisitions
-    for i in range(nacq):
-        print('\nStarting acquisition {}/{} ...'.format(i + 1, nacq))
+    pbar = tqdm.trange(nacq)
+    for i in pbar:
+        pbar.set_description('Starting acquisition')
         scope.write('ACQ:STATE RUN')
         while(int(scope.ask('ACQ:STATE?'))):
             time.sleep(1)
-        print('Data acquired, now writing...')
+        pbar.set_description('Data acquired, now writing')
         scope.write('SAVE:WAVE ALL, \'{}/{}_{}.wfm\''.format(folder, filename, i))
-
         time.sleep(20)
-        print('Finished')
 
     print('\nFinished\nFiles stored in \'{}/\' on scope'.format(folder))
 
