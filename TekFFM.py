@@ -53,7 +53,7 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
         while(int(scope.ask('ACQ:STATE?'))):
             time.sleep(1)
         pbar.set_description('Data acquired, now writing')
-        scope.write('SAVE:WAVE ALL, \'{}/{}_{}.wfm\''.format(folder, filename, i))
+        scope.write('SAVE:WAVE ALL, \'{}/{}_{}_\''.format(folder, filename, i))
         time.sleep(20)
 
     print('\nFinished\nFiles stored in \'{}/\' on scope'.format(folder))
