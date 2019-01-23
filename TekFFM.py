@@ -64,7 +64,7 @@ if __name__=='__main__':
     parser.add_argument('folder', default=datetime.date, help='The folder name below "C:/" for the saved oscilliscope data')
     parser.add_argument('filename', help='The filename base for the saved files')
     parser.add_argument('nacq', type=int, help='The number of fastframe acquisitions to take')
-    parser.add_argument('-s', '--start', type=int, default=0, help='The iteration to start on. Helpful if resuming a previous run.'
+    parser.add_argument('-s', '--start', type=int, default=0, help='The iteration to start on. Helpful if resuming a previous run.')
     args = parser.parse_args()
 
     take_data(args.folder, args.filename, args.nacq, args.start)
