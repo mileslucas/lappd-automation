@@ -8,9 +8,9 @@ import vxi11
 import tqdm
 
 
-inst_ip = '10.11.151.97'
+inst_ip = '10.11.151.17'
 
-def take_data(fold, filename, nacq, verbose=True):
+def take_data(fold, filename, nacq, start=0, verbose=True):
     '''
     This function takes data using the tektronix oscilloscope set up in Matt's workspace
 
@@ -21,8 +21,10 @@ def take_data(fold, filename, nacq, verbose=True):
         created recursively, so every folder except the last one listed must already exist on the machine
     filename (string):
         This will be the filename to prepend each sample with.
-    nacg (int):
+    nacq (int):
         This is the number of fast frame acquisitions to make
+    start (int):
+        The acquisition number to start at
     verbose (bool):
         Show outputs from acquisition
     '''
@@ -44,7 +46,7 @@ def take_data(fold, filename, nacq, verbose=True):
     scope.write('HOR:FAST:COUN 1000')
 
     # Get acquisitions
-    pbar = tqdm.trange(nacq)
+    pbar = tqdm.trange(start, nacq)
     for i in pbar:
         pbar.set_description('Starting acquisition')
         scope.write('ACQ:STATE RUN')
@@ -62,6 +64,7 @@ if __name__=='__main__':
     parser.add_argument('folder', default=datetime.date, help='The folder name below "C:/" for the saved oscilliscope data')
     parser.add_argument('filename', help='The filename base for the saved files')
     parser.add_argument('nacq', type=int, help='The number of fastframe acquisitions to take')
+    parser.add_argument('-s', '--start', type=int, default=0, help='The iteration to start on. Helpful if resuming a previous run.'
     args = parser.parse_args()
 
-    take_data(args.folder, args.filename, args.nacq)
+    take_data(args.folder, args.filename, args.nacq, args.start)
