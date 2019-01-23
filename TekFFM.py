@@ -46,7 +46,7 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
     scope.write('HOR:FAST:COUN 1000')
 
     # Get acquisitions
-    pbar = tqdm.trange(start, nacq)
+    pbar = tqdm.trange(start, nacq, initial=start, total=nacq)
     for i in pbar:
         pbar.set_description('Starting acquisition')
         scope.write('ACQ:STATE RUN')
