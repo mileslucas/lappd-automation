@@ -34,28 +34,32 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
     folder = 'C:/' + fold
 
     # Set up instrument
-    scope = vxi11.Instrument(inst_ip)
-    print(scope.ask('*IDN?'))
+    with vxi11.Instrument(inst_ip) as scope:
+        print(scope.ask('*IDN?'))
 
-    # Create Folder for data
-    scope.write('FILES:MKD \'{}\''.format(folder))
+        # Create Folder for data
+        scope.write('FILES:MKD \'{}\''.format(folder))
 
-    # Set up fastframe and scope settings
-    # scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
-    scope.write('HOR:FAST:STATE 1')
-    scope.write('HOR:FAST:COUN 1000')
+        # Set up fastframe and scope settings
+        # scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
+        scope.write('HOR:FAST:STATE 1')
+        scope.write('HOR:FAST:COUN 1000')
 
-    # Get acquisitions
-    pbar = tqdm.trange(start, nacq, initial=start, total=nacq)
-    for i in pbar:
-        pbar.set_description('Starting acquisition')
-        scope.write('ACQ:STATE RUN')
-        while(int(scope.ask('ACQ:STATE?'))):
-            time.sleep(1)
-        pbar.set_description('Data acquired, now writing')
-        scope.write('SAVE:WAVE ALL, \'{}/{}_{}_\''.format(folder, filename, i))
-        time.sleep(20)
-
+        # Get acquisitions
+        pbar = tqdm.trange(start, nacq, initial=start, total=nacq)
+        for i in pbar:
+            pbar.set_description('Starting acquisition')
+            try:
+                scope.write('ACQ:STATE RUN')
+                while(int(scope.ask('ACQ:STATE?'))):
+                    time.sleep(1)
+                pbar.set_description('Data acquired, now writing')
+                scope.write('SAVE:WAVE ALL, \'{}/{}_{}_\''.format(folder, filename, i))
+                time.sleep(20)
+            except Exception as e:
+                print(f'Failed on iteration {i}. To rerun issue "./TekFFM.py {fold} {filename} {nacq} -s {i}"')
+                raise
+                
     print('\nFinished\nFiles stored in \'{}/\' on scope'.format(folder))
 
 if __name__=='__main__':
