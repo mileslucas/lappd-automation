@@ -7,6 +7,7 @@ import time
 import vxi11
 import tqdm
 
+from slack_bot import send_message
 
 inst_ip = '10.11.151.17'
 
@@ -31,20 +32,23 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
     
 
 
-    folder = 'C:/' + fold
+    folder = 'C:'
 
     # Set up instrument
     with vxi11.Instrument(inst_ip) as scope:
         print(scope.ask('*IDN?'))
-
-        # Create Folder for data
-        scope.write('FILES:MKD \'{}\''.format(folder))
-
+        
+        # Create folder recursively for data
+        for token in fold.split('/'):
+            folder += f'/{token}'
+            scope.write(f"FILES:MKD '{folder}'")
+        
         # Set up fastframe and scope settings
         # scope.write('HOR:MAIN:SCA 10e-9') # 10 ns
         scope.write('HOR:FAST:STATE 1')
         scope.write('HOR:FAST:COUN 1000')
-
+        start_message = f"Starting to take data.\n{nacq} frames will be saved in folder '{folder}' with names '{filename}_i_CHj.wfm' on the scope."
+        send_message(start_message)
         # Get acquisitions
         pbar = tqdm.trange(start, nacq, initial=start, total=nacq)
         for i in pbar:
@@ -57,10 +61,14 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
                 scope.write('SAVE:WAVE ALL, \'{}/{}_{}_\''.format(folder, filename, i))
                 time.sleep(20)
             except Exception as e:
-                print(f'Failed on iteration {i}. To rerun issue "./TekFFM.py {fold} {filename} {nacq} -s {i}"')
+                fail_message = (f'\U0000274C Failed on iteration {i}. To rerun issue `python TekFFM.py {fold} {filename} {nacq} -s {i}`')
+                print(fail_message)
+                send_message(fail_message)
                 raise
-                
-    print('\nFinished\nFiles stored in \'{}/\' on scope'.format(folder))
+    success_message = f"\U00002714 Completed {nacq} acquisitions\nFiles stored in '{folder}' on scope."
+    print(success_message)
+    send_message(success_message)
+
 
 if __name__=='__main__':
     # Argument Parsing
@@ -70,5 +78,4 @@ if __name__=='__main__':
     parser.add_argument('nacq', type=int, help='The number of fastframe acquisitions to take')
     parser.add_argument('-s', '--start', type=int, default=0, help='The iteration to start on. Helpful if resuming a previous run.')
     args = parser.parse_args()
-
-    take_data(args.folder, args.filename, args.nacq, args.start)
+    take_data(args.folder.replace('\\', '/'), args.filename, args.nacq, args.start)
