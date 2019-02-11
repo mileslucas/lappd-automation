@@ -1,24 +1,6 @@
 import serial
 import time
 
-class MotorConnection():
-    '''
-    This class provides a connection wrapper to enable safe use of the Motors class
-
-    To use this class, use
-    >>> with MotorConnection() as m:
-    >>>     # Whatever motor instructions
-    '''
-    def __enter__(self):
-        ser = serial.Serial('/dev/ttyUSB0', baudrate=19200, xonxoff=False)
-        self.motor = Motors(ser)
-        self.motor.connect()
-        return self.motor
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.motor.allstop()
-        self.motor.disconnect()
-
 
 class Motors():
     '''
@@ -29,11 +11,12 @@ class Motors():
         self.ser = serial.Serial(port, baudrate=19200, xonxoff=False)
 
     def __enter__(self):
-        self.connect(ser)
+        self.connect()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.allstop()
+        self.disconnect()
     
     def connect(self):
         '''
