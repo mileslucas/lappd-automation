@@ -25,8 +25,15 @@ class Motors():
     This class wraps all the serial commands for the LAPPD motors. It should not be directly instantiated.
     Instead a MotorConnection should be established using the with directive
     '''
-    def __init__(self, ser):
-        self.ser = ser
+    def __init__(self, port='/dev/ttyUSB0'):
+        self.ser = serial.Serial(port, baudrate=19200, xonxoff=False)
+
+    def __enter__(self):
+        self.connect(ser)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.allstop()
     
     def connect(self):
         '''
@@ -110,7 +117,7 @@ class Motors():
         self.ser.write('mr {} {}\n'.format(motor, distance).encode())
 
 if __name__=='__main__':
-    with MotorConnection() as m:
+    with Motor() as m:
         while True:
             cmd = input('@ ')
             if cmd=='left':

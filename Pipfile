@@ -10,6 +10,7 @@ ipython = "*"
 tqdm = "*"
 vxi11 = {git = "https://github.com/mileslucas/python-vxi11"}
 slackclient = "*"
+pyserial = "*"
 
 [requires]
 python_version = "3.7"
