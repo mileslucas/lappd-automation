@@ -60,7 +60,7 @@ class Motors():
         motor (int):
             0 or 1 for the x or y stage motor
         '''
-        self.move(motor, 0)
+        self.moveto(motor, 0)
 
     def moveto(self, motor, position):
         '''

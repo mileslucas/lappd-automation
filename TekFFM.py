@@ -48,7 +48,8 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
         scope.write('HOR:FAST:STATE 1')
         scope.write('HOR:FAST:COUN 1000')
         start_message = f"Starting to take data.\n{nacq} frames will be saved in folder '{folder}' with names '{filename}_i_CHj.wfm' on the scope."
-        send_message(start_message)
+        if verbose: 
+            send_message(start_message)
         # Get acquisitions
         pbar = tqdm.trange(start, nacq, initial=start, total=nacq)
         for i in pbar:
@@ -67,7 +68,8 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
                 raise
     success_message = f"\U00002714 Completed {nacq} acquisitions\nFiles stored in '{folder}' on scope."
     print(success_message)
-    send_message(success_message)
+    if verbose:
+        send_message(success_message)
 
 
 if __name__=='__main__':
