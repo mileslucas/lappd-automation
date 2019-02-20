@@ -146,7 +146,7 @@ class Motors():
         position : int
             The encoder position to set as current
         """
-        resp = self.ser.write('ma {} {}\n'.format(motor, position).encode())
+        resp = self.ser.write('mc {} {}\n'.format(motor, position).encode())
         self.log.debug(resp)
         return resp
 
@@ -175,7 +175,7 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 try:
                     cont = int(cont)
                     m.move(0, -cont)
-                except: ValueError:
+                except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
                         m.move(0, -1000)
                     else:
@@ -190,7 +190,7 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 try:
                     cont = int(cont)
                     m.move(0, cont)
-                except: ValueError:
+                except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
                         m.move(0, 1000)
                     else:
@@ -208,7 +208,7 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 try:
                     cont = int(cont)
                     m.move(1, -cont)
-                except: ValueError:
+                except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
                         m.move(1, -1000)
                     else:
@@ -221,7 +221,7 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 try:
                     cont = int(cont)
                     m.move(1, cont)
-                except: ValueError:
+                except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
                         m.move(1, 1000)
                     else:
@@ -236,31 +236,35 @@ def find_lims(parallel=True, transverse=True, recenter=True):
             print('Transverse limits: {}'.format(tlim))
             lims.append(plim)
 
-    return lims if len(lims)
+    if len(lims):
+        return lims
             
 def interface():
     """
     This function acts as a terminal console for the motors
     """
     with Motors() as m:
-        command = input('Current Position: {} >'.format(m.get_position()))
-        tokens = command.split()
-        if tokens[0] == 'ma':
-            if len(tokens[1:]) == 1:
-                resp = m.get_position(int(tokens[1]))
+        while True:
+            command = input('Current {} @> '.format(m.get_position()))
+            tokens = command.split()
+            if len(tokens) == 0:
+                continue
+            if tokens[0] == 'ma':
+                if len(tokens) == 2:
+                    resp = m.get_position(int(tokens[1]))
+                else:
+                    resp = m.moveto(int(tokens[1]), int(tokens[2]))
+            elif tokens[0] == 'mr':
+                resp = m.move(int(tokens[1]), int(tokens[2]))
+            elif tokens[0] == 'mc':
+                resp = m.calibrate(int(tokens[1]), int(tokens[2]))
+            elif tokens[0] in ['as', 'stop']:
+                m.allstop()
+            elif tokens[0] in ['quit', 'exit']:
+                break
             else:
-                resp = m.moveto(int(tokens[1]), int(tokens[2]))
-        elif tokens[0] == 'mr':
-            resp = m.move(int(tokens[1]), int(tokens[2]))
-        elif tokens[0] == 'mc':
-            resp = m.calibrate(int(tokens[1]), int(tokens[2]))
-        elif tokens[0] in ['as', 'stop']:
-            m.allstop()
-        elif tokens[0] in ['quit', 'exit']:
-            break
-        else:
-            resp = 'Invalid input'
-        print(resp)
+                resp = 'Invalid input'
+            print(resp)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
