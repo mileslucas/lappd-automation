@@ -144,7 +144,7 @@ class Motors():
         self.ser.write('mr {} {}\n'.format(motor, distance).encode())
         self.ser.readline()
         self.ser.readline()
-        delay = distance / VELOCITY
+        delay = abs(distance) / VELOCITY
         time.sleep(delay)
 
     def calibrate(self, motor, position):
@@ -185,13 +185,13 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 print('Current position: {}'.format(m.get_position(0)))
                 cont = input('Move left? (y/[n] or ticks): ')
                 try:
-                    cont = int(cont)
-                    m.move(0, -cont)
+                    dist = int(cont)
                 except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
-                        m.move(0, -1000)
+                        dist = 1000
                     else:
                         break
+                m.move(0, -dist)
             if recenter:
                 m.calibrate(0, 0)
             left_lim = m.get_position(0)
@@ -200,13 +200,13 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 print('Current position: {}'.format(m.get_position(0)))
                 cont = input('Move right? (y/[n] or ticks): ')
                 try:
-                    cont = int(cont)
-                    m.move(0, cont)
+                    dist = int(cont)
                 except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
-                        m.move(0, 1000)
+                        dist = 1000
                     else:
                         break
+                m.move(0, dist)
             right_lim = m.get_position(0)
             plim = (left_lim, right_lim)
             print('Parallel limits: {}'.format(plim))
@@ -218,26 +218,26 @@ def find_lims(parallel=True, transverse=True, recenter=True):
                 print('Current position: {}'.format(m.get_position(1)))
                 cont = input('Move farther? (y/[n] or ticks): ')
                 try:
-                    cont = int(cont)
-                    m.move(1, -cont)
+                    dist = int(cont)
                 except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
-                        m.move(1, -1000)
+                        dist = 1000
                     else:
                         break
+                m.move(1, -dist)
             far_lim = m.get_position(1)
             print('Begin finding near limit')
             while True:
                 print('Current position: {}'.format(m.get_position(1)))
                 cont = input('Move closer? (y/[n] or ticks): ')
                 try:
-                    cont = int(cont)
-                    m.move(1, cont)
+                    dist = int(cont)
                 except ValueError:
                     if cont.lower() in ['y', 'yes','t', 'true']:
-                        m.move(1, 1000)
+                        dist = 1000
                     else:
                         break
+                m.move(1, dist)
             near_lim = m.get_position(1)
             if recenter:
                 diff = near_lim - far_lim

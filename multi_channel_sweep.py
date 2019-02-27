@@ -6,12 +6,11 @@ import tqdm.auto as tqdm
 import time
 import argparse
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 REACH = 2810 # ticks per mm
 
-VEL = 13000 # encoder ticks per second, approx (rounded down)
-XLIM = (0, 495000)
+XLIM = (0, 490000)
 YLIM = (-20000, 20000)
 
 def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True, **kwargs):
@@ -38,53 +37,47 @@ def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True
     takeData = 'folder' in kwargs and 'filename' in kwargs and 'nacq' in kwargs
 
     xstops = np.linspace(*xlims, num_parallel, dtype=np.int32)
-    xtime = (xstops[1] - xstops[0]) / VEL
     if num_transverse > 1:
         ystops = np.linspace(*ylims, num_transverse, dtype=np.int32)
-        ytime = (ystops[1] - ystops[0]) / VEL
     else:
         ystops = [0]
-        ytime = 0
     if verbose:
         send_message('Beginning a multi channel sweep with {} parallel stops and {} transverse stops'.format(num_parallel, num_transverse))
     with Motors() as m:
         logging.info('Moving to initial position')
         m.moveto(0, xstops[0])
         m.moveto(1, ystops[0])
-        time.sleep(max(xtime, ytime))
         for i, x in enumerate(tqdm.tqdm(xstops)):
             if num_transverse > 1:
                 idx, _ = enumerate(tqdm.tqdm(ystops))
                 yseq = ystops if not i % 2 else reversed(ystops)
                 idx = idx if not i % 2 else reversed(idx)
                 for j, y in zip(idx, yseq):
-                    pos_info = 'Stop {}/{}'.format((i * num_transverse + j), num_parallel * num_transverse)
+                    pos_info = 'Stop {}/{}'.format((i * num_transverse + j + 1), num_parallel * num_transverse)
                     if verbose:
                         send_message(pos_info)
                     if j == 0:
                         logging.debug('Moving x stage to {}'.format(x))
                         m.moveto(0, x)
-                        time.sleep(xtime)
                     else:
                         logging.debug('Moving y stage to {}'.format(y))
                         m.moveto(1, y)
-                        time.sleep(ytime)
                     m.allstop()
                     if takeData:
-                        take_data(kwargs['folder'], kwargs['filename'] + '_stop{}_channel{}'.format(i, j), kwargs['nacq'], verbose=False)
+                        xpos, ypos = m.get_position()
+                        take_data('{}/stop{}_channel{}_pos-{}-{}'.format(kwargs['folder'], i, j, xpos, ypos), kwargs['filename'], kwargs['nacq'], verbose=False)
             else:
-                pos_info = 'Stop {}/{}'.format(i, num_parallel)
+                pos_info = 'Stop {}/{}'.format(i + 1, num_parallel)
                 if verbose:
                     send_message(pos_info)
                 logging.debug('Moving x stage to {}'.format(x))
                 m.moveto(0, x)
-                time.sleep(xtime)
                 m.allstop()
                 if takeData:
-                    take_data(kwargs['folder'], '{}_stop{}'.format(kwargs['filename'], i), kwargs['nacq'], verbose=False)
+                    xpos, ypos = m.get_position()
+                    take_data('{}/stop{}_pos-{}-{}'.format(kwargs['folder'], i, xpos, ypos), kwargs['filename'], kwargs['nacq'], verbose=False)
         logging.info('Moving home')
         m.park()
-        time.sleep(max(xtime * num_parallel, ytime * num_transverse))
         m.allstop()
         finish_message = '\U00002714 Completed multi channel sweep'
         if verbose:
