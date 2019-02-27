@@ -3,6 +3,7 @@ import time
 import logging
 import argparse
 
+VELOCITY=13000 #ticks per second
 
 class Motors():
     '''
@@ -86,10 +87,16 @@ class Motors():
         """
 
         if isinstance(motor, int):
-            return self.ser.write('ma {}\n'.format(motor).encode())
+            self.ser.write('ma {}\r'.format(motor).encode())
+            self.ser.readline()
+            return int(self.ser.readline().strip())
         elif motor == 'all':
-            xpos = self.ser.write('ma 0\n'.encode())
-            ypos = self.ser.write('ma 1\n'.encode())
+            self.ser.write('ma 0\r'.encode())
+            self.ser.readline()
+            xpos = int(self.ser.readline().strip())
+            self.ser.write('ma 1\r'.encode())
+            self.ser.readline()
+            ypos = int(self.ser.readline().strip())
             return xpos, ypos
         else:
             raise ValueError('Improper motor given: {}'.format(motor))
@@ -105,9 +112,12 @@ class Motors():
         position (int):
             the absolute motor position
         '''
-        resp = self.ser.write('ma {} {}\n'.format(motor, position).encode())
-        self.log.debug(resp)
-        return resp
+        cur_pos = self.get_position(motor)
+        self.ser.write('ma {} {}\n'.format(motor, position).encode())
+        self.ser.readline()
+        self.ser.readline()
+        delay = abs(cur_pos - position) / VELOCITY
+        time.sleep(delay)
     
     def stop(self, motor):
         '''
@@ -131,9 +141,11 @@ class Motors():
         position (int):
             the relative motor position
         '''
-        resp = self.ser.write('mr {} {}\n'.format(motor, distance).encode())
-        self.log.debug(resp)
-        return resp
+        self.ser.write('mr {} {}\n'.format(motor, distance).encode())
+        self.ser.readline()
+        self.ser.readline()
+        delay = distance / VELOCITY
+        time.sleep(delay)
 
     def calibrate(self, motor, position):
         """
@@ -146,9 +158,9 @@ class Motors():
         position : int
             The encoder position to set as current
         """
-        resp = self.ser.write('mc {} {}\n'.format(motor, position).encode())
-        self.log.debug(resp)
-        return resp
+        self.ser.write('mc {} {}\n'.format(motor, position).encode())
+        self.ser.readline()
+        self.ser.readline()
 
 def find_lims(parallel=True, transverse=True, recenter=True):
     """
@@ -251,20 +263,19 @@ def interface():
                 continue
             if tokens[0] == 'ma':
                 if len(tokens) == 2:
-                    resp = m.get_position(int(tokens[1]))
+                    print(m.get_position(int(tokens[1])))
                 else:
-                    resp = m.moveto(int(tokens[1]), int(tokens[2]))
+                    m.moveto(int(tokens[1]), int(tokens[2]))
             elif tokens[0] == 'mr':
-                resp = m.move(int(tokens[1]), int(tokens[2]))
+                m.move(int(tokens[1]), int(tokens[2]))
             elif tokens[0] == 'mc':
-                resp = m.calibrate(int(tokens[1]), int(tokens[2]))
+                m.calibrate(int(tokens[1]), int(tokens[2]))
             elif tokens[0] in ['as', 'stop']:
                 m.allstop()
             elif tokens[0] in ['quit', 'exit']:
                 break
             else:
-                resp = 'Invalid input'
-            print(resp)
+                print('Invalid input')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
