@@ -49,10 +49,10 @@ def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True
         m.moveto(1, ystops[0])
         for i, x in enumerate(tqdm.tqdm(xstops)):
             if num_transverse > 1:
-                idx, _ = enumerate(tqdm.tqdm(ystops))
+                idx = range(num_transverse)
                 yseq = ystops if not i % 2 else reversed(ystops)
                 idx = idx if not i % 2 else reversed(idx)
-                for j, y in zip(idx, yseq):
+                for j, y in tqdm.tqdm(zip(idx, yseq)):
                     pos_info = 'Stop {}/{}'.format((i * num_transverse + j + 1), num_parallel * num_transverse)
                     if verbose:
                         send_message(pos_info)
