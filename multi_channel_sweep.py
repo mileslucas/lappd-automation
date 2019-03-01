@@ -6,12 +6,12 @@ import tqdm.auto as tqdm
 import time
 import argparse
 import logging
+import toml
 logging.basicConfig(level=logging.INFO)
 
-REACH = 2810 # ticks per mm
+log = logging.getLogger(__name__)
 
-XLIM = (0, 490000)
-YLIM = (-20000, 20000)
+CONFIG_FILE = 'CONFIG.toml'
 
 def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True, **kwargs):
     '''
@@ -33,12 +33,11 @@ def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True
         The parameters for TekFFM if provided will save data at each stop
 
     '''
-
     takeData = 'folder' in kwargs and 'filename' in kwargs and 'nacq' in kwargs
 
-    xstops = np.linspace(*xlims, num_parallel, dtype=np.int32)
+    xstops = np.linspace(*xlim, num_parallel, dtype=np.int32)
     if num_transverse > 1:
-        ystops = np.linspace(*ylims, num_transverse, dtype=np.int32)
+        ystops = np.linspace(*ylim, num_transverse, dtype=np.int32)
     else:
         ystops = [0]
     if verbose:
@@ -85,6 +84,10 @@ def multi_channel_sweep(num_parallel, num_transverse, xlims, ylims, verbose=True
         logging.info(finish_message)
 
 if __name__=='__main__':
+    config = toml.load(CONFIG_FILE)
+    xlim = config['motors']['xlim']
+    ylim = config['motors']['ylim']
+
     parser = argparse.ArgumentParser(
         description='Move motors to n discrete points across c channels on an LAPPD channel to take data')
     parser.add_argument(
@@ -96,6 +99,6 @@ if __name__=='__main__':
     args = parser.parse_args()
     logging.debug('Parsed arguments: {}'.format(args))
     if args.data is not None:
-        multi_channel_sweep(args.n, args.c, XLIM, YLIM, not args.quiet, folder=args.data[0], filename=args.data[1], nacq=int(args.data[2]))
+        multi_channel_sweep(args.n, args.c, xlim, ylim, not args.quiet, folder=args.data[0], filename=args.data[1], nacq=int(args.data[2]))
     else:
-        multi_channel_sweep(args.n, args.c, XLIM, YLIM, not args.quiet)
+        multi_channel_sweep(args.n, args.c, xlim, ylim, not args.quiet)

@@ -1,0 +1,10 @@
+title = "ISU LAPPD Testbench"
+
+[motors]
+reach = 2810
+velocity = 13000
+xlim = [0, 490000]
+ylim = [-20000, 20000]
+
+[oscope]
+ip_address = "10.11.151.17"

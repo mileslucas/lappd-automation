@@ -3,13 +3,18 @@ import argparse
 import datetime
 import sys
 import time
+import logging
 
 import vxi11
 import tqdm
+import toml
 
 from slack_bot import send_message
 
-inst_ip = '10.11.151.17'
+log = logging.getLogger(__name__)
+
+CONFIG_FILENAME = 'CONFIG.toml'
+
 
 def take_data(fold, filename, nacq, start=0, verbose=True):
     '''
@@ -30,13 +35,15 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
         Show outputs from acquisition
     '''
     
-
+    config = toml.load(CONFIG_FILENAME)
 
     folder = 'C:'
 
     # Set up instrument
+
+    inst_ip = config['oscope']['ip_address']
     with vxi11.Instrument(inst_ip) as scope:
-        print(scope.ask('*IDN?'))
+        log.info(scope.ask('*IDN?'))
         
         # Create folder recursively for data
         for token in fold.split('/'):
@@ -63,11 +70,11 @@ def take_data(fold, filename, nacq, start=0, verbose=True):
                 time.sleep(20)
             except Exception as e:
                 fail_message = (f'\U0000274C Failed on iteration {i}. To rerun issue `python TekFFM.py {fold} {filename} {nacq} -s {i}`')
-                print(fail_message)
+                log.warning(fail_message)
                 send_message(fail_message)
                 raise
     success_message = f"\U00002714 Completed {nacq} acquisitions\nFiles stored in '{folder}' on scope."
-    print(success_message)
+    log.info(success_message)
     if verbose:
         send_message(success_message)
 

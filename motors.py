@@ -2,8 +2,10 @@ import serial
 import time
 import logging
 import argparse
+import toml
 
-VELOCITY=13000 #ticks per second
+CONFIG_FILENAME = 'CONFIG.toml'
+
 
 class Motors():
     '''
@@ -13,6 +15,8 @@ class Motors():
     def __init__(self, port='/dev/ttyUSB0'):
         self.ser = serial.Serial(port, baudrate=19200, xonxoff=False)
         self.log = logging.getLogger(self.__class__.__name__)
+        self.config = toml.load(CONFIG_FILENAME)
+        self.velocity = self.config['motors']['velocity']
 
     def __enter__(self):
         self.connect()
@@ -116,7 +120,7 @@ class Motors():
         self.ser.write('ma {} {}\n'.format(motor, position).encode())
         self.ser.readline()
         self.ser.readline()
-        delay = abs(cur_pos - position) / VELOCITY
+        delay = abs(cur_pos - position) / self.velocity
         time.sleep(delay)
     
     def stop(self, motor):
@@ -144,7 +148,7 @@ class Motors():
         self.ser.write('mr {} {}\n'.format(motor, distance).encode())
         self.ser.readline()
         self.ser.readline()
-        delay = abs(distance) / VELOCITY
+        delay = abs(distance) / self.velocity
         time.sleep(delay)
 
     def calibrate(self, motor, position):
@@ -162,7 +166,7 @@ class Motors():
         self.ser.readline()
         self.ser.readline()
 
-def find_lims(parallel=True, transverse=True, recenter=True):
+def find_lims(parallel=True, transverse=True, recenter=True, write=True):
     """
     This function starts a feedback loop to determine the limits of the 
     transverse and parallel stages
@@ -176,8 +180,12 @@ def find_lims(parallel=True, transverse=True, recenter=True):
     recenter : bool, optional
         If True, will set the left parallel limit to encoder position 0 and
         the median of the transverse limits to 0. Default is True
+    write : bool, optional
+        If True, will take the set limits and apply them to the CONFIG file.
+        Default is True
     """
-    lims = []
+    plim = None
+    tlim = None 
     with Motors() as m:
         if parallel:
             print('Begin finding left limit')
@@ -210,7 +218,6 @@ def find_lims(parallel=True, transverse=True, recenter=True):
             right_lim = m.get_position(0)
             plim = (left_lim, right_lim)
             print('Parallel limits: {}'.format(plim))
-            lims.append(plim)
         
         if transverse:
             print('Begin finding far limit')
@@ -246,10 +253,16 @@ def find_lims(parallel=True, transverse=True, recenter=True):
             else:
                 tlim = (far_lim, near_lim)
             print('Transverse limits: {}'.format(tlim))
-            lims.append(plim)
 
-    if len(lims):
-        return lims
+    if write:
+        config = toml.load(CONFIG_FILENAME)
+        if plim:
+            config['motors']['xlim'] = plim
+        if tlim:
+            config['motors']['ylim'] = tlim
+        toml.dump(config, CONFIG_FILENAME)
+
+    
             
 def interface():
     """
